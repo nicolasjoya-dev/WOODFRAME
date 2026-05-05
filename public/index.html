@@ -533,5 +533,9 @@ function renderProductos(prods) {
  
 initProductosIndex();
 </script>
+<script>
+  // Evita que Render se duerma
+  setInterval(() => fetch('/api/firebase-config').catch(()=>{}), 840000); // 14 min
+</script>
 </body>
 </html>

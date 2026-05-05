@@ -117,5 +117,5 @@ app.get('/api/firebase-config', (req, res) => {
     appId:             process.env.FIREBASE_APP_ID,
   });
 });
-
+app.get('/ping', (req, res) => res.send('ok'));
 app.listen(PORT, () => console.log(`Wood Frame server running on port ${PORT}`));
