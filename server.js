@@ -37,7 +37,7 @@ app.post('/api/chat', async (req, res) => {
   if (!mensaje) return res.status(400).json({ error: 'Mensaje vacío' });
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       systemInstruction: `Eres Wood Bot 🌿, el asistente virtual de Wood Frame,
         una marca colombiana de marcos de lentes fabricados en bambú biodegradable con corte láser.
         Responde siempre en español, de forma breve, amigable y con emojis ocasionales.
