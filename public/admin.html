@@ -916,19 +916,17 @@ let uploadedImageUrl = '';
 async function initProductos() {
   try {
     const cfg = await fetch('/api/firebase-config').then(r=>r.json());
-    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
     const { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const app = initializeApp(cfg);
+    // ← evita error "app already exists"
+    const app = getApps().find(a=>a.name==='admin') || initializeApp(cfg, 'admin');
     db = getFirestore(app);
     db._col = () => collection(db, 'productos');
-    db._getDocs   = getDocs;
-    db._addDoc    = addDoc;
-    db._updateDoc = updateDoc;
-    db._deleteDoc = deleteDoc;
-    db._doc       = doc;
+    db._getDocs=getDocs; db._addDoc=addDoc; db._updateDoc=updateDoc; db._deleteDoc=deleteDoc; db._doc=doc;
     loadProductos();
   } catch(e) {
-    document.getElementById('prod-grid-container').innerHTML = '<div class="empty-state"><p>Error al conectar con Firebase. Verifica las variables de entorno.</p></div>';
+    console.error('Firebase init error:', e); // ← para ver el error real
+    document.getElementById('prod-grid-container').innerHTML = '<div class="empty-state"><p>Error: '+e.message+'</p></div>';
   }
 }
 
