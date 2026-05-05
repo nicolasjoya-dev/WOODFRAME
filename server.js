@@ -28,6 +28,38 @@ initializeApp({
 });
 
 const db = getFirestore();
+// ── GEMINI CHAT ──
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+app.post('/api/chat', async (req, res) => {
+  const { mensaje } = req.body;
+  if (!mensaje) return res.status(400).json({ error: 'Mensaje vacío' });
+  try {
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: `Eres Wood Bot 🌿, el asistente virtual de Wood Frame,
+        una marca colombiana de marcos de lentes fabricados en bambú biodegradable con corte láser.
+        Responde siempre en español, de forma breve, amigable y con emojis ocasionales.
+        Información de la empresa:
+        - Misión: desarrollar marcos biodegradables en bambú como alternativa sostenible a los plásticos ópticos.
+        - Visión: ser líderes en óptica ecológica para 2030.
+        - Productos: Marco Clásico $45.000 COP, Marco Minimalista $50.000 COP, Marco Personalizable $55.000 COP.
+        - Equipo: CEO Nicolás Pineda, Producción Daivier Cárdenas, Contaduría y Web Nicolás Joya.
+        - Contacto: WhatsApp +57 333 2929 778, correo nico.joya2010@gmail.com.
+        - Ubicación: Bogotá, Colombia.
+        - Meta de lanzamiento: 2027.
+        Si preguntan cómo comprar, diles que hagan clic en "Comprar" en la sección de Diseños.
+        Si no sabes algo, sugiere escribir al WhatsApp.
+        Nunca inventes precios ni información que no esté aquí.`
+    });
+    const result = await model.generateContent(mensaje);
+    res.json({ ok: true, respuesta: result.response.text() });
+  } catch (e) {
+    console.error('Gemini error:', e.message);
+    res.status(500).json({ ok: false, error: 'Error al contactar IA' });
+  }
+});
 
 // ── AUTH ──
 function isAdmin(req) {

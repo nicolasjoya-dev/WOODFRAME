@@ -34,15 +34,7 @@ body{background:var(--black);color:var(--text);font-family:'Poppins',sans-serif;
 #inicio>*{position:relative;z-index:1;}
 .hero-content{max-width:620px;margin-left:10%;padding:40px 0;}
 .hero-badge{display:inline-block;font-size:0.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);border:1px solid var(--border);padding:5px 14px;border-radius:4px;margin-bottom:20px;}
-.hero-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2.5rem, 5vw, 4rem);
-  line-height: 1.15;
-  margin-top: 80px; /* <--- Ajusta este número según cuánto quieras bajarlo */
-  margin-bottom: 18px;
-  color: #fff;
-}
-
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5vw,4rem);line-height:1.15;margin-top:80px;margin-bottom:18px;color:#fff;}
 .hero-title em{font-style:italic;color:var(--gold);}
 .hero-text{font-size:1rem;color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:32px;max-width:480px;}
 .hero-btns{display:flex;gap:16px;flex-wrap:wrap;}
@@ -151,16 +143,25 @@ body{background:var(--black);color:var(--text);font-family:'Poppins',sans-serif;
 #chat-toggle{display:none;}
 .chat-boton{position:fixed;bottom:25px;right:25px;width:52px;height:52px;background:var(--green-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:200;font-size:22px;box-shadow:0 4px 16px rgba(11,68,6,0.5);transition:.25s;}
 .chat-boton:hover{transform:scale(1.08);}
-.chat-caja{position:fixed;bottom:88px;right:25px;width:300px;background:#1a1a1a;border:1px solid var(--border);border-radius:12px;overflow:hidden;opacity:0;transform:translateY(20px);pointer-events:none;transition:.3s;z-index:200;}
+.chat-caja{position:fixed;bottom:88px;right:25px;width:320px;background:#1a1a1a;border:1px solid var(--border);border-radius:12px;overflow:hidden;opacity:0;transform:translateY(20px);pointer-events:none;transition:.3s;z-index:200;}
 #chat-toggle:checked~.chat-caja{opacity:1;transform:translateY(0);pointer-events:auto;}
-.chat-header{background:var(--gold);color:#000;padding:12px 16px;font-weight:700;font-size:0.9rem;}
-.chat-body{padding:14px;height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.chat-header{background:var(--gold);color:#000;padding:12px 16px;font-weight:700;font-size:0.9rem;display:flex;align-items:center;gap:8px;}
+.chat-header span.dot{width:8px;height:8px;background:#0b4406;border-radius:50%;display:inline-block;}
+.chat-body{padding:14px;height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
 .msg{padding:9px 13px;border-radius:9px;max-width:88%;font-size:0.83rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
 .bot{background:#2a2a2a;align-self:flex-start;}
 .user{background:var(--green-dark);align-self:flex-end;}
+.typing{background:#2a2a2a;align-self:flex-start;padding:9px 16px;border-radius:9px;}
+.typing span{display:inline-block;width:6px;height:6px;background:var(--muted);border-radius:50%;margin:0 2px;animation:bounce 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
 .chat-input{display:flex;border-top:1px solid #2a2a2a;}
 .chat-input input{flex:1;padding:10px 12px;border:none;outline:none;background:#111;color:#fff;font-family:'Poppins',sans-serif;font-size:0.83rem;}
-.chat-input button{padding:10px 14px;border:none;background:var(--gold);cursor:pointer;font-weight:700;font-size:0.82rem;color:#000;}
+.chat-input input:disabled{opacity:0.5;}
+.chat-input button{padding:10px 14px;border:none;background:var(--gold);cursor:pointer;font-weight:700;font-size:0.82rem;color:#000;transition:.2s;}
+.chat-input button:hover{background:var(--gold-light);}
+.chat-input button:disabled{opacity:0.5;cursor:not-allowed;}
 
 /* FOOTER */
 .footer-sitio{background:linear-gradient(to top,#060d07,#0d1a0f);padding:50px 8% 40px;border-top:1px solid rgba(196,154,108,0.1);}
@@ -242,7 +243,6 @@ body{background:var(--black);color:var(--text);font-family:'Poppins',sans-serif;
   <span class="sec-tag">Colección 2026</span>
   <h2 class="sec-title animar">Nuestros Diseños</h2>
   <div class="productos-grid animar" id="productos-grid">
-    <!-- productos cargados dinámicamente desde Firebase -->
     <div style="text-align:center;padding:60px;color:var(--muted);width:100%;">Cargando productos...</div>
   </div>
 </section>
@@ -354,166 +354,200 @@ body{background:var(--black);color:var(--text);font-family:'Poppins',sans-serif;
 <input type="checkbox" id="chat-toggle">
 <label for="chat-toggle" class="chat-boton">💬</label>
 <div class="chat-caja">
-  <div class="chat-header">🌿 Wood Frame Bot</div>
+  <div class="chat-header">
+    <span class="dot"></span>
+    🌿 Wood Frame Bot — IA
+  </div>
   <div class="chat-body" id="chat-body">
-    <div class="msg bot">Hola, soy Wood Bot 🌿 ¿En qué te puedo ayudar? (Misión, Visión, Precios, etc.)</div>
+    <div class="msg bot">¡Hola! Soy Wood Bot 🌿, asistente con IA de Wood Frame. ¿En qué te puedo ayudar? Puedo contarte sobre nuestra misión, productos, precios o el equipo.</div>
   </div>
   <div class="chat-input">
-    <input type="text" id="chat-input-text" placeholder="Escribe tu duda..." onkeypress="if(event.key==='Enter')enviarMensaje()">
-    <button onclick="enviarMensaje()">Enviar</button>
+    <input type="text" id="chat-input-text" placeholder="Escribe tu pregunta..." onkeypress="if(event.key==='Enter')enviarMensaje()">
+    <button id="chat-send-btn" onclick="enviarMensaje()">Enviar</button>
   </div>
 </div>
 
 <script>
-// INTERSECTION OBSERVER
-const observer = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});
-},{threshold:0.15});
-document.querySelectorAll('.animar').forEach(el=>observer.observe(el));
+// ── INTERSECTION OBSERVER ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.animar').forEach(el => observer.observe(el));
 
 // ── MODAL COMPRA ──
-let currentProduct='', currentPrice='';
-function abrirModal(nombre, precio){
-  currentProduct=nombre; currentPrice=precio;
-  document.getElementById('modal-prod-name').textContent=`${nombre} — ${precio}`;
-  document.getElementById('order-nombre').value='';
-  document.getElementById('order-tel').value='';
-  document.getElementById('order-correo').value='';
-  document.getElementById('order-notas').value='';
-  document.getElementById('order-msg').textContent='';
-  document.getElementById('modalCompra').style.display='flex';
+let currentProduct = '', currentPrice = '';
+function abrirModal(nombre, precio) {
+  currentProduct = nombre; currentPrice = precio;
+  document.getElementById('modal-prod-name').textContent = `${nombre} — ${precio}`;
+  document.getElementById('order-nombre').value = '';
+  document.getElementById('order-tel').value = '';
+  document.getElementById('order-correo').value = '';
+  document.getElementById('order-notas').value = '';
+  document.getElementById('order-msg').textContent = '';
+  document.getElementById('modalCompra').style.display = 'flex';
 }
-function cerrarModal(){document.getElementById('modalCompra').style.display='none';}
-window.addEventListener('click',e=>{if(e.target===document.getElementById('modalCompra'))cerrarModal();});
+function cerrarModal() { document.getElementById('modalCompra').style.display = 'none'; }
+window.addEventListener('click', e => { if (e.target === document.getElementById('modalCompra')) cerrarModal(); });
 
-document.getElementById('btn-confirmar-compra').addEventListener('click', async ()=>{
-  const nombre=document.getElementById('order-nombre').value.trim();
-  const telefono=document.getElementById('order-tel').value.trim();
-  const correo=document.getElementById('order-correo').value.trim();
-  const notas=document.getElementById('order-notas').value.trim();
-  const msgEl=document.getElementById('order-msg');
-  if(!nombre){msgEl.style.color='#e53935';msgEl.textContent='Por favor ingresa tu nombre.';return;}
-  msgEl.style.color='var(--gold)';msgEl.textContent='Enviando pedido...';
-  try{
-    const res=await fetch('/api/orders',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({nombre,telefono,correo,producto:currentProduct,precio:currentPrice,notas})
+document.getElementById('btn-confirmar-compra').addEventListener('click', async () => {
+  const nombre   = document.getElementById('order-nombre').value.trim();
+  const telefono = document.getElementById('order-tel').value.trim();
+  const correo   = document.getElementById('order-correo').value.trim();
+  const notas    = document.getElementById('order-notas').value.trim();
+  const msgEl    = document.getElementById('order-msg');
+  if (!nombre) { msgEl.style.color = '#e53935'; msgEl.textContent = 'Por favor ingresa tu nombre.'; return; }
+  msgEl.style.color = 'var(--gold)'; msgEl.textContent = 'Enviando pedido...';
+  try {
+    const res  = await fetch('/api/orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, telefono, correo, producto: currentProduct, precio: currentPrice, notas })
     });
-    const data=await res.json();
-    if(data.ok){
-      msgEl.style.color='#4caf50';msgEl.textContent='✅ ¡Pedido registrado! Te contactaremos pronto.';
-      const numero="573332929778";
-      const msg=encodeURIComponent(`Hola, acabo de hacer un pedido en la web.\nProducto: ${currentProduct}\nNombre: ${nombre}\nTeléfono: ${telefono}`);
-      setTimeout(()=>{window.open(`https://wa.me/${numero}?text=${msg}`,'_blank');cerrarModal();},1500);
-    }else{msgEl.style.color='#e53935';msgEl.textContent='Error al registrar. Intenta de nuevo.';}
-  }catch(err){
-    // Fallback sin servidor
-    const numero="573332929778";
-    const msg=encodeURIComponent(`Hola, me interesa comprar: ${currentProduct} (${currentPrice})\nNombre: ${nombre}`);
-    msgEl.style.color='#4caf50';msgEl.textContent='✅ Redirigiendo a WhatsApp...';
-    setTimeout(()=>{window.open(`https://wa.me/${numero}?text=${msg}`,'_blank');cerrarModal();},1000);
+    const data = await res.json();
+    if (data.ok) {
+      msgEl.style.color = '#4caf50'; msgEl.textContent = '✅ ¡Pedido registrado! Te contactaremos pronto.';
+      const numero = "573332929778";
+      const msg = encodeURIComponent(`Hola, acabo de hacer un pedido en la web.\nProducto: ${currentProduct}\nNombre: ${nombre}\nTeléfono: ${telefono}`);
+      setTimeout(() => { window.open(`https://wa.me/${numero}?text=${msg}`, '_blank'); cerrarModal(); }, 1500);
+    } else { msgEl.style.color = '#e53935'; msgEl.textContent = 'Error al registrar. Intenta de nuevo.'; }
+  } catch (err) {
+    const numero = "573332929778";
+    const msg = encodeURIComponent(`Hola, me interesa comprar: ${currentProduct} (${currentPrice})\nNombre: ${nombre}`);
+    msgEl.style.color = '#4caf50'; msgEl.textContent = '✅ Redirigiendo a WhatsApp...';
+    setTimeout(() => { window.open(`https://wa.me/${numero}?text=${msg}`, '_blank'); cerrarModal(); }, 1000);
   }
 });
 
 // ── ADMIN LOGIN ──
-function openAdminLogin(e){e&&e.preventDefault();document.getElementById('adminModal').classList.add('active');document.getElementById('admin-err').textContent='';}
-function closeAdminLogin(){document.getElementById('adminModal').classList.remove('active');}
-async function doAdminLogin(){
-  const user=document.getElementById('admin-user').value.trim();
-  const pass=document.getElementById('admin-pass').value.trim();
-  const errEl=document.getElementById('admin-err');
-  errEl.textContent='';
-  try{
-    const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user,pass})});
-    const data=await res.json();
-    if(data.ok){
-      sessionStorage.setItem('wf_token',data.token);
+function openAdminLogin(e) { e && e.preventDefault(); document.getElementById('adminModal').classList.add('active'); document.getElementById('admin-err').textContent = ''; }
+function closeAdminLogin() { document.getElementById('adminModal').classList.remove('active'); }
+async function doAdminLogin() {
+  const user  = document.getElementById('admin-user').value.trim();
+  const pass  = document.getElementById('admin-pass').value.trim();
+  const errEl = document.getElementById('admin-err');
+  errEl.textContent = '';
+  try {
+    const res  = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user, pass }) });
+    const data = await res.json();
+    if (data.ok) {
+      sessionStorage.setItem('wf_token', data.token);
       closeAdminLogin();
-      window.location.href='admin.html';
-    }else{errEl.textContent='Credenciales incorrectas.';}
-  }catch{
-    // Fallback offline
-    if(user==='WOOD FRAME'&&pass==='WOOD FRAME'){
-      sessionStorage.setItem('wf_token',btoa('WOOD FRAME:WOOD FRAME'));
+      window.location.href = 'admin.html';
+    } else { errEl.textContent = 'Credenciales incorrectas.'; }
+  } catch {
+    if (user === 'WOOD FRAME' && pass === 'WOOD FRAME') {
+      sessionStorage.setItem('wf_token', btoa('WOOD FRAME:WOOD FRAME'));
       closeAdminLogin();
-      window.location.href='admin.html';
-    }else{errEl.textContent='Credenciales incorrectas.';}
+      window.location.href = 'admin.html';
+    } else { errEl.textContent = 'Credenciales incorrectas.'; }
   }
 }
-document.getElementById('admin-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doAdminLogin();});
+document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doAdminLogin(); });
 
-// ── CHAT BOT ──
-const chatBody=document.getElementById('chat-body');
-function enviarMensaje(){
-  const input=document.getElementById('chat-input-text');
-  const txt=input.value.trim();if(!txt)return;
-  addMsg(txt,'user');input.value='';
-  setTimeout(()=>botReply(txt.toLowerCase()),600);
-}
-function addMsg(txt,type){
-  const div=document.createElement('div');div.className=`msg ${type}`;
+// ── CHAT CON IA (Gemini via backend) ──
+const chatBody   = document.getElementById('chat-body');
+const chatInput  = document.getElementById('chat-input-text');
+const chatSendBtn = document.getElementById('chat-send-btn');
+
+function addMsg(txt, type) {
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+  if (type === 'bot') {
+    escribir(div, txt, 16);
+  } else {
+    div.textContent = txt;
+  }
   chatBody.appendChild(div);
-  if(type==='bot'){escribir(div,txt,18);}else{div.textContent=txt;}
-  chatBody.scrollTop=chatBody.scrollHeight;
+  chatBody.scrollTop = chatBody.scrollHeight;
+  return div;
 }
-function escribir(el,txt,spd){
-  let i=0;el.textContent='';
-  const iv=setInterval(()=>{
-    if(i<txt.length){el.textContent+=txt.charAt(i++);chatBody.scrollTop=chatBody.scrollHeight;}
+
+function escribir(el, txt, spd) {
+  let i = 0; el.textContent = '';
+  const iv = setInterval(() => {
+    if (i < txt.length) { el.textContent += txt.charAt(i++); chatBody.scrollTop = chatBody.scrollHeight; }
     else clearInterval(iv);
-  },spd);
+  }, spd);
 }
-function botReply(t){
-  let r='No entendí eso 🤔 Prueba: misión, precios, organigrama, problema.';
-  if(t.includes('hola')||t.includes('holi'))r='¡Hola! 🌿 Soy Wood Bot. ¿Te ayudo con misión, visión, precios u organigrama?';
-  else if(t.includes('misi'))r='Nuestra misión es desarrollar marcos de lentes biodegradables en bambú mediante corte láser, como alternativa sostenible.';
-  else if(t.includes('visi'))r='Para 2027 buscamos ser líderes en fabricación de marcos ecológicos funcionales en el mercado óptico.';
-  else if(t.includes('precio')||t.includes('costo')||t.includes('vale')||t.includes('cuanto'))r='Precios:\n• Clásico: $45.000\n• Minimalista: $50.000\n• Personalizable: $55.000 COP';
-  else if(t.includes('organi')||t.includes('ceo')||t.includes('equipo'))r='CEO: Nicolás Pineda\nProducción: Daivier Cárdenas\nContaduría & Web: Nicolás Joya';
-  else if(t.includes('problem')||t.includes('bamb'))r='Buscamos reducir las 250 toneladas de plástico que genera la industria óptica usando bambú biodegradable.';
-  else if(t.includes('pedido')||t.includes('comprar'))r='¡Perfecto! Haz clic en el botón "Comprar" de cualquier diseño para hacer tu pedido. 🛒';
-  addMsg(r,'bot');
+
+function mostrarTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  div.id = 'typing-indicator';
+  chatBody.appendChild(div);
+  chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+function quitarTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+async function enviarMensaje() {
+  const txt = chatInput.value.trim();
+  if (!txt) return;
+
+  addMsg(txt, 'user');
+  chatInput.value = '';
+  chatInput.disabled = true;
+  chatSendBtn.disabled = true;
+  mostrarTyping();
+
+  try {
+    const res  = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mensaje: txt })
+    });
+    const data = await res.json();
+    quitarTyping();
+    addMsg(data.ok ? data.respuesta : '⚠️ Hubo un error. Intenta de nuevo.', 'bot');
+  } catch {
+    quitarTyping();
+    addMsg('Sin conexión 😕 Escríbenos al WhatsApp: +57 333 2929 778', 'bot');
+  } finally {
+    chatInput.disabled = false;
+    chatSendBtn.disabled = false;
+    chatInput.focus();
+  }
 }
 </script>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
- 
+
 async function initProductosIndex() {
   try {
-    const cfg = await fetch('/api/firebase-config').then(r => r.json());
-    const app = initializeApp(cfg, 'index-app');
-    const db  = getFirestore(app);
+    const cfg  = await fetch('/api/firebase-config').then(r => r.json());
+    const app  = initializeApp(cfg, 'index-app');
+    const db   = getFirestore(app);
     const snap = await getDocs(collection(db, 'productos'));
     const prods = [];
     snap.forEach(d => prods.push({ id: d.id, ...d.data() }));
     renderProductos(prods.filter(p => p.disponible !== false));
-  } catch(e) {
-    // Fallback a productos estáticos si Firebase falla
+  } catch (e) {
     renderProductos([
-      { id:'1', nombre:'Marco Clásico',       precio:'45000', descripcion:'Bambú 100% biodegradable y resistente', imagen:'marco3.jpeg' },
-      { id:'2', nombre:'Marco Minimalista',   precio:'50000', descripcion:'Excelente relación calidad–precio',     imagen:'marco2.jpeg' },
-      { id:'3', nombre:'Marco Personalizable',precio:'55000', descripcion:'Grabado láser y diseño personalizado',  imagen:'marco1.jpg'  },
+      { id:'1', nombre:'Marco Clásico',        precio:'45000', descripcion:'Bambú 100% biodegradable y resistente', imagen:'marco3.jpeg' },
+      { id:'2', nombre:'Marco Minimalista',    precio:'50000', descripcion:'Excelente relación calidad–precio',     imagen:'marco2.jpeg' },
+      { id:'3', nombre:'Marco Personalizable', precio:'55000', descripcion:'Grabado láser y diseño personalizado',  imagen:'marco1.jpg'  },
     ]);
   }
 }
- 
+
 function renderProductos(prods) {
   const grid = document.getElementById('productos-grid');
   if (!prods.length) {
     grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted);width:100%;">No hay productos disponibles.</div>';
     return;
   }
- 
-  // Agrupa en columnas de hasta 1 producto por col (igual al diseño original)
   const beneficios = [
     { titulo: 'Material ecológico', desc: 'Bambú 100% biodegradable y resistente' },
     { titulo: 'Económico',          desc: 'Excelente relación calidad–precio' },
     { titulo: 'A tu medida',        desc: 'Grabado láser y diseño personalizado' },
   ];
- 
   grid.innerHTML = prods.map((p, i) => {
-    const ben = beneficios[i % beneficios.length];
+    const ben    = beneficios[i % beneficios.length];
     const precio = '$' + Number(p.precio || 0).toLocaleString('es-CO') + ' COP';
     return `
       <div class="producto-col">
@@ -530,12 +564,13 @@ function renderProductos(prods) {
       </div>`;
   }).join('');
 }
- 
+
 initProductosIndex();
 </script>
+
 <script>
   // Evita que Render se duerma
-  setInterval(() => fetch('/api/firebase-config').catch(()=>{}), 840000); // 14 min
+  setInterval(() => fetch('/api/firebase-config').catch(() => {}), 840000);
 </script>
 </body>
 </html>

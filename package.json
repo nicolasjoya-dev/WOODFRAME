@@ -8,6 +8,7 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "express": "^4.18.2",
     "firebase-admin": "^12.7.0"
   }
