@@ -107,5 +107,8 @@ app.get('/api/firebase-config', (req, res) => {
     appId:             process.env.FIREBASE_APP_ID,
   });
 });
-
+app.get('/api/cloudinary-config', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
+  res.json({ cloudName: CLOUDINARY_CLOUD_NAME });
+});
 app.listen(PORT, () => console.log(`Wood Frame server running on port ${PORT}`));

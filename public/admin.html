@@ -1009,21 +1009,21 @@ function previewImage(input) {
 }
 
 async function uploadToCloudinary(file) {
-  const sigData = await fetch('/api/upload-signature',{headers:{'x-admin-token':TOKEN}}).then(r=>r.json());
+  const cfgRes = await fetch('/api/firebase-config').then(r => r.json());
+  // Obtener cloudName desde el servidor
+  const cloudName = await fetch('/api/cloudinary-config',{headers:{'x-admin-token':TOKEN}}).then(r=>r.json()).then(d=>d.cloudName);
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('api_key', sigData.apiKey);
-  fd.append('timestamp', sigData.timestamp);
-  fd.append('signature', sigData.signature);
+  fd.append('upload_preset', 'WOOD FRAME');
   const bar=document.getElementById('uploading-bar'); bar.style.display='block';
   const inner=document.getElementById('uploading-bar-inner');
   let prog=0; const iv=setInterval(()=>{ prog=Math.min(prog+8,85); inner.style.width=prog+'%'; },120);
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`,{method:'POST',body:fd}).then(r=>r.json());
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,{method:'POST',body:fd}).then(r=>r.json());
   clearInterval(iv); inner.style.width='100%';
   setTimeout(()=>{ bar.style.display='none'; inner.style.width='0%'; },600);
+  if (res.error) throw new Error(res.error.message);
   return res.secure_url;
 }
-
 async function saveProd() {
   const nombre   = document.getElementById('prod-nombre').value.trim();
   const precio   = document.getElementById('prod-precio').value.trim();
