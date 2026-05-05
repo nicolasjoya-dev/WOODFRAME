@@ -1014,7 +1014,7 @@ async function uploadToCloudinary(file) {
   const cloudName = await fetch('/api/cloudinary-config',{headers:{'x-admin-token':TOKEN}}).then(r=>r.json()).then(d=>d.cloudName);
   const fd = new FormData();
   fd.append('file', file);
-  fd.append('upload_preset', 'WOOD FRAME');
+  fd.append('upload_preset', 'WOOD FRAME'.toLowerCase().replace(' ', '_'));
   const bar=document.getElementById('uploading-bar'); bar.style.display='block';
   const inner=document.getElementById('uploading-bar-inner');
   let prog=0; const iv=setInterval(()=>{ prog=Math.min(prog+8,85); inner.style.width=prog+'%'; },120);
