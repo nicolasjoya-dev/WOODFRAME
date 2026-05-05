@@ -1,102 +1,112 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-const https = require('https');
+const https   = require('https');
+const crypto  = require('crypto');
+const path    = require('path');
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
-const ADMIN_USER  = process.env.ADMIN_USER || 'WOOD FRAME';
-const ADMIN_PASS  = process.env.ADMIN_PASS || 'WOOD FRAME';
+const ADMIN_USER            = process.env.ADMIN_USER || 'WOOD FRAME';
+const ADMIN_PASS            = process.env.ADMIN_PASS || 'WOOD FRAME';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY    = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
-const CLOUDINARY_CLOUD_NAME    = process.env.CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_API_KEY       = process.env.CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET    = process.env.CLOUDINARY_API_SECRET;
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
+// ── FIREBASE ADMIN ──
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore }        = require('firebase-admin/firestore');
+
+initializeApp({
+  credential: cert({
+    projectId:   process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey:  (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  }),
+});
+
+const db = getFirestore();
 
 // ── AUTH ──
 function isAdmin(req) {
-  const token = req.headers['x-admin-token'];
-  return token === Buffer.from(`${ADMIN_USER}:${ADMIN_PASS}`).toString('base64');
+  return req.headers['x-admin-token'] === Buffer.from(`${ADMIN_USER}:${ADMIN_PASS}`).toString('base64');
 }
 
 // ── ORDERS ──
-function loadOrders() {
-  if (!fs.existsSync(ORDERS_FILE)) fs.writeFileSync(ORDERS_FILE, '[]');
-  return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-}
-function saveOrders(orders) {
-  fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-}
-
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const { nombre, telefono, correo, producto, precio, notas } = req.body;
   if (!nombre || !producto) return res.status(400).json({ error: 'Faltan datos' });
-  const orders = loadOrders();
-  const order = {
-    id: Date.now(),
-    fecha: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
-    nombre, telefono, correo, producto, precio, notas,
-    estado: 'Pendiente'
-  };
-  orders.push(order);
-  saveOrders(orders);
-  res.json({ ok: true, order });
+  try {
+    const order = {
+      fecha: new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' }),
+      nombre, telefono: telefono||'', correo: correo||'',
+      producto, precio: precio||'', notas: notas||'',
+      estado: 'Pendiente',
+      createdAt: Date.now(),
+    };
+    const ref = await db.collection('orders').add(order);
+    res.json({ ok: true, order: { id: ref.id, ...order } });
+  } catch(e) {
+    res.status(500).json({ error: 'Error al guardar pedido' });
+  }
 });
 
-app.get('/api/orders', (req, res) => {
+app.get('/api/orders', async (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
-  res.json(loadOrders());
+  try {
+    const snap = await db.collection('orders').orderBy('createdAt','desc').get();
+    const orders = [];
+    snap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+    res.json(orders);
+  } catch(e) {
+    res.status(500).json({ error: 'Error al cargar pedidos' });
+  }
 });
 
-app.patch('/api/orders/:id', (req, res) => {
+app.patch('/api/orders/:id', async (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
-  const orders = loadOrders();
-  const idx = orders.findIndex(o => o.id === parseInt(req.params.id));
-  if (idx === -1) return res.status(404).json({ error: 'No encontrado' });
-  orders[idx].estado = req.body.estado || orders[idx].estado;
-  saveOrders(orders);
-  res.json(orders[idx]);
+  try {
+    await db.collection('orders').doc(req.params.id).update({ estado: req.body.estado });
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: 'Error al actualizar' });
+  }
 });
 
-app.delete('/api/orders/:id', (req, res) => {
+app.delete('/api/orders/:id', async (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
-  let orders = loadOrders();
-  orders = orders.filter(o => o.id !== parseInt(req.params.id));
-  saveOrders(orders);
-  res.json({ ok: true });
+  try {
+    await db.collection('orders').doc(req.params.id).delete();
+    res.json({ ok: true });
+  } catch(e) {
+    res.status(500).json({ error: 'Error al eliminar' });
+  }
 });
 
+// ── LOGIN ──
 app.post('/api/login', (req, res) => {
   const { user, pass } = req.body;
-  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+  if (user === ADMIN_USER && pass === ADMIN_PASS)
     return res.json({ ok: true, token: Buffer.from(`${ADMIN_USER}:${ADMIN_PASS}`).toString('base64') });
-  }
   res.status(401).json({ error: 'Credenciales incorrectas' });
 });
 
-// ── CLOUDINARY UPLOAD (firma desde servidor, sube desde cliente) ──
-// El cliente sube directamente a Cloudinary usando un preset unsigned.
-// Si prefieres upload firmado, este endpoint genera la firma.
+// ── CLOUDINARY ──
+app.get('/api/cloudinary-config', (req, res) => {
+  if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
+  res.json({ cloudName: CLOUDINARY_CLOUD_NAME });
+});
+
 app.post('/api/upload-signature', (req, res) => {
   if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
   const timestamp = Math.round(Date.now() / 1000);
-  const crypto = require('crypto');
-  const str = `timestamp=${timestamp}${CLOUDINARY_API_SECRET}`;
-  const signature = crypto.createHash('sha1').update(str).digest('hex');
-  res.json({
-    signature,
-    timestamp,
-    cloudName: CLOUDINARY_CLOUD_NAME,
-    apiKey: CLOUDINARY_API_KEY,
-  });
+  const signature = crypto.createHash('sha1').update(`timestamp=${timestamp}${CLOUDINARY_API_SECRET}`).digest('hex');
+  res.json({ signature, timestamp, cloudName: CLOUDINARY_CLOUD_NAME, apiKey: CLOUDINARY_API_KEY });
 });
 
-// ── FIREBASE CONFIG (expone solo las claves públicas al frontend) ──
+// ── FIREBASE CONFIG PUBLICA ──
 app.get('/api/firebase-config', (req, res) => {
   res.json({
     apiKey:            process.env.FIREBASE_API_KEY,
@@ -107,8 +117,5 @@ app.get('/api/firebase-config', (req, res) => {
     appId:             process.env.FIREBASE_APP_ID,
   });
 });
-app.get('/api/cloudinary-config', (req, res) => {
-  if (!isAdmin(req)) return res.status(401).json({ error: 'No autorizado' });
-  res.json({ cloudName: CLOUDINARY_CLOUD_NAME });
-});
+
 app.listen(PORT, () => console.log(`Wood Frame server running on port ${PORT}`));
